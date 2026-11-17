@@ -1,0 +1,40 @@
+{
+  "name": "inventario-tienda",
+  "private": true,
+  "version": "0.4.0",
+  "type": "module",
+  "description": "Gestión local-first para emprendimiento de indumentaria (remeras y buzos)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "tauri": "tauri",
+    "app:dev": "tauri dev",
+    "app:build": "tauri build",
+    "release": "node scripts/version.mjs",
+    "version:map": "node scripts/version-map.mjs --verify"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/plugin-dialog": "^2.2.0",
+    "@tauri-apps/plugin-fs": "^2.2.0",
+    "@tauri-apps/plugin-opener": "^2.2.5",
+    "@tauri-apps/plugin-updater": "^2.2.0",
+    "jsqr": "^1.4.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0",
+    "@types/node": "^20.19.43",
+    "@types/qrcode": "^1.5.6",
+    "typescript": "^5.6.3",
+    "vite": "^6.4.5",
+    "vitest": "^4.1.12"
+  }
+}

@@ -1,0 +1,60 @@
+[package]
+name = "inventario-tienda"
+version = "0.4.0"
+edition = "2021"
+
+[lib]
+name = "inventario_tienda"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["clock", "serde"] }
+sha2 = "0.10"
+base64 = "0.22"
+argon2 = "0.5"
+chacha20poly1305 = "0.10"
+zeroize = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["time", "macros", "rt-multi-thread"] }
+rand = "0.8"
+# Actualizador multiplataforma: en escritorio usa tauri-plugin-updater; en
+# Android descarga el APK y lo guarda en Descargas.
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
+minisign-verify = "0.3"
+semver = "1"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-opener = "2"
+# SAF (Storage Access Framework) para que el usuario elija la carpeta bóveda
+# en Android y para guardar el APK en Descargas.
+tauri-plugin-android-fs = "2"
+
+# Actualizaciones de escritorio (fase 5). El plugin oficial no soporta Android;
+# allí el actualizador se implementa en este mismo crate.
+[target.'cfg(not(target_os = "android"))'.dependencies]
+tauri-plugin-updater = "2"
+
+[target.'cfg(target_os = "android")'.dependencies]
+# Puente JNI para guardar el APK descargado en la carpeta pública Descargas
+# usando MediaStore (Android 10+) o el directorio público legacy (Android 9).
+jni = "0.21"
+ndk-context = "0.1"
+# `reqwest` usa `rustls-platform-verifier`, que exige inicialización JNI en
+# Android. Para el actualizador usamos las raíces de Mozilla incluidas en el
+# binario y evitamos depender del verificador del sistema.
+webpki-root-certs = "1"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Las dependencias del sistema (webkit2gtk, libsoup, gtk3) se instalan
+# en el entorno del sistema, no vía Cargo.
+
+[target.'cfg(target_os = "windows")'.dependencies]
+
+[profile.release]
+opt-level = 2
+debug = false
