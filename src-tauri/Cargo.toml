@@ -37,7 +37,7 @@ tauri-plugin-android-fs = "2"
 # Actualizaciones de escritorio (fase 5). El plugin oficial no soporta Android;
 # allí el actualizador se implementa en este mismo crate.
 [target.'cfg(not(target_os = "android"))'.dependencies]
-tauri-plugin-updater = "2"
+tauri-plugin-updater = "2.14.1"
 
 [target.'cfg(target_os = "android")'.dependencies]
 # Puente JNI para guardar el APK descargado en la carpeta pública Descargas
