@@ -1,103 +1,177 @@
 # Inventario Tienda
 
-Local-first inventory management for apparel business (t-shirts and hoodies). Stack: **Tauri 2 + TypeScript vanilla + Vite**, persistence in **Event Sourcing (JSONL append-only)**, no SQL `.db`.
+[![CI](https://github.com/wulflo/StoreInventory/actions/workflows/ci.yml/badge.svg)](https://github.com/wulflo/StoreInventory/actions/workflows/ci.yml)
+[![Release](https://github.com/wulflo/StoreInventory/actions/workflows/release.yml/badge.svg)](https://github.com/wulflo/StoreInventory/actions/workflows/release.yml)
+[![Versión](https://img.shields.io/badge/version-0.4.0-green.svg)](package.json)
+[![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
 
-## Features
+> Gestión de inventario **local-first** para emprendimientos de indumentaria (remeras y buzos). Sin base de datos SQL, sin cuentas y sin servidor: los datos viven en una carpeta que eliges tú.
 
-### Catalog
-- Collections with season/year and summary (sales, units produced, margin).
-- Products with SKU, type (t-shirt/hoodie), price and costs (fabric, printing, labor, other).
-- Colors with hex code.
-- Variants generated in **sizes × colors** grid (fixed sizes: XS, S, M, L, XL, XXL, 3XL).
-- Minimum stock per variant with alerts.
+**Stack:** Tauri 2 · TypeScript vanilla · Vite · Rust · Event Sourcing (JSONL append-only)
 
-### Orders
-- Create orders with customer, lines (variant + quantity), delivery date and notes.
-- States: pending, in production, ready, delivered, cancelled.
-- Partial payments and payment states (unpaid, deposit, partial, paid).
-- Full or partial line delivery (generates "sale" stock movement).
-- Stock availability validation with warning (sale without stock allowed, marked "to produce").
-- WhatsApp for customers.
-- Order detail printing.
+## Contenido
 
-### Production
-- Production orders with lines (variant + planned quantity).
-- States: planned, in progress, completed, cancelled.
-- Complete production (generates "production" stock movement).
-- Automatic linking of produced items to open order lines.
-- Production suggestions based on pending orders vs available stock.
+- [Por qué local-first](#-por-qué-local-first)
+- [Funcionalidades](#-funcionalidades)
+- [Inicio rápido](#-inicio-rápido)
+- [Cómo viven tus datos](#-cómo-viven-tus-datos)
+- [Descargas y actualizaciones](#-descargas-y-actualizaciones)
+- [Desarrollo](#-desarrollo)
+- [Limitaciones conocidas](#-limitaciones-conocidas)
+- [Documentación](#-documentación)
+- [Licencia](#-licencia)
+
+## 🎯 Por qué local-first
+
+| | |
+|---|---|
+| **Sin dependencias externas** | Funciona 100 % offline. No hay backend, login ni suscripción. |
+| **Historial inmutable** | Cada cambio es un evento; el estado se deriva, nunca se sobrescribe. |
+| **Cifrado por diseño** | Cada `payload` se cifra con XChaCha20-Poly1305; la clave la desbloqueas con contraseña y código de recuperación. |
+| **Tú eliges dónde** | La bóveda puede estar en disco local, en una unidad o en una carpeta sincronizada por otro agente. |
+
+## ✨ Funcionalidades
+
+### Catálogo
+
+- Colecciones con temporada/año y resumen de ventas, unidades producidas y margen.
+- Productos con SKU, tipo (remera/buzo), precio y costos (tela, impresión, mano de obra, otros).
+- Colores con código hexadecimal.
+- Variantes generadas automáticamente en la grilla **talle × color** (XS, S, M, L, XL, XXL, 3XL).
+- Stock mínimo por variante con alertas.
+
+### Pedidos
+
+- Alta con cliente, líneas (variante + cantidad), fecha de entrega y notas.
+- Estados: pendiente, en producción, listo, entregado, cancelado.
+- Pagos parciales y estados de pago: sin pago, seña, parcial, pagado.
+- Entrega total o parcial por línea (genera movimiento de stock de "venta").
+- Validación de stock disponible con advertencia: se permite vender sin stock y se marca *a producir*.
+- Envío por WhatsApp y impresión del detalle del pedido.
+
+### Producción
+
+- Órdenes de producción con líneas (variante + cantidad planificada).
+- Estados: planificada, en curso, completada, cancelada.
+- Al completar, se genera el movimiento de stock de "producción".
+- Vinculación automática de lo producido con las líneas de pedidos abiertos.
+- Sugerencias de producción según pedidos pendientes vs. stock disponible.
 
 ### Stock
-- Stock derived from movements (append-only, immutable).
-- Total, reserved (committed by non-cancelled orders) and available stock.
-- Movements: production, sale, positive/negative adjustment, return, initial.
-- Movement history filterable by type, date and search.
-- Minimum stock alerts.
 
-### Customers
-- Listing and detail with contact info (phone, email, address, notes).
-- Order history and balance per customer.
-- Direct WhatsApp link.
-- Soft delete (archived) if has orders.
+- Stock derivado de movimientos inmutables (*append-only*): total, reservado (pedidos no cancelados) y disponible.
+- Tipos de movimiento: producción, venta, ajuste positivo/negativo, devolución e inicial.
+- Historial filtrable por tipo, fecha y búsqueda, con alertas de stock mínimo.
 
-### Expenses
-- Expense registration with date, category, description, amount and payment method.
-- Summary by category and period.
-- Edit and delete expenses.
+### Clientes y gastos
 
-### Reports
-- Income, gross profit, expenses, net profit by period (month/quarter/year/custom).
-- Breakdown by collection and top selling products.
-- Expenses by category.
-- Production of the period.
+- **Clientes:** listado y detalle con contacto (teléfono, email, dirección, notas), historial de pedidos, saldo y acceso directo a WhatsApp. Borrado lógico (archivado) si tiene pedidos.
+- **Gastos:** registro con fecha, categoría, descripción, monto y medio de pago; resumen por categoría y período; edición y eliminación.
 
-### Settings and Data
-- Device info and storage type.
-- Preferences: display currency (ARS/USD/EUR, manual ARS-per-unit rate) and light/dark theme. Amounts are always stored in ARS cents; the selector only changes how they are formatted. The UI is Spanish-only for now.
-- Export/import JSON backup (all events). In the native app the export keeps each payload encrypted exactly as it is on disk; the browser development store exports decrypted payloads.
-- Initial CSV import (products, customers, orders) with column mapping.
-- **Bóveda elegida por el usuario:** los datos viven en `<bóveda>/omega/`; las copias diarias en `<bóveda>/longlife/<dispositivo>/<fecha>/`, con retención de 7 días por dispositivo. La copia del día se actualiza unos minutos después de cada cambio y al cerrar o pasar a segundo plano. No hay sincronización P2P/LAN integrada.
-- **Sincronización externa opcional:** la bóveda se puede compartir con un agente de sincronización de archivos o un proveedor de nube. La app lee/escribe la carpeta y tolera copias de conflicto, pero no resuelve conflictos semánticos entre ediciones.
-- **Updates:** signed search and installation with minisign. Desktop uses Tauri updater; Android downloads APK, verifies signature and saves to **Downloads** folder for manual installation.
-- **Payload encryption (obligatoria):** random 32-byte DEK that encrypts each event `payload` with XChaCha20-Poly1305; the DEK is wrapped (Argon2id) by a master password **and** a one-time recovery code. Metadata stays in plaintext for ordering. The keyring lives in `<bóveda>/omega/keys/keyring.json`; the unlocked key only in RAM. La misma contraseña/código abre la bóveda en otro equipo. Password change re-wraps the DEK; key rotation re-encrypts everything.
-- **Pre-encryption backups:** activating or rotating encryption writes plaintext copies under `omega/backups/pre-encryption-*`. They are excluded from longlife; Ajustes > Cifrado lets you review and delete them.
-- **Clear data:** before emptying the event files, the app refreshes today's longlife snapshot. The automatic refresh refuses to replace a non-empty snapshot with an empty `omega`, so the pre-clear copy is preserved.
-- **Restore:** Ajustes > Respaldo lists snapshots grouped by device, validates every hash, creates a `pre-restore-*` copy, clears the local journal and replaces `omega` under a write lock. The app reloads locked so the restored keyring can be unlocked.
-- **Device identity:** `device_id` belongs to the local installation (app data dir), not to the vault. Copying the vault to another computer yields a different id. A heartbeat in `omega/writer.json` warns when another device opened the vault recently; the single-writer rule is still manual.
-- Risk zone (clear data).
+### Reportes
 
-### Data Semantics
-- **UUID v7 IDs** (time-sortable, no autoincrement).
-- `created_at` / `updated_at` / `deleted_at` / `device_id` on every entity.
-- `device_id` is the local installation id (outside the vault); events keep the id of the device that wrote them.
-- Money always in **ARS cents** (integers).
-- Changes recorded as immutable events; state is derived (not overwritten).
-- Conflict resolution: movements always merged; editable fields LWW per field with HLC.
+- Ingresos, utilidad bruta, gastos y utilidad neta por período (mes, trimestre, año o rango personalizado).
+- Desglose por colección y productos más vendidos.
+- Gastos por categoría y producción del período.
 
-### Usage Mode
-- 100% local / offline, no cloud or mandatory accounts.
-- Web development: `npm run dev` (Vite at `http://127.0.0.1:1420`).
-- Native app: `npm run app:dev` (Tauri) / `npm run app:build`.
-- Desktop: el usuario elige una carpeta bóveda; los datos quedan en `<bóveda>/omega`.
-- Android: el usuario elige una carpeta mediante SAF; los datos quedan en `<bóveda>/omega`.
-- No hay sync P2P/LAN. Para compartir entre equipos, usar un agente de sincronización externo sobre la carpeta y no editar en dos equipos a la vez.
-- Manual JSON export plus automatic snapshots in `<bóveda>/longlife` (daily, refreshed after changes; local o nube si la bóveda está sincronizada).
+### Datos y seguridad
 
-## Known limitations and continuity
+- **Cifrado obligatorio:** DEK aleatoria de 32 bytes por evento con XChaCha20-Poly1305; la DEK se envuelve (Argon2id) con una contraseña maestra **y** un código de recuperación de un solo uso. Los metadatos quedan en texto plano para poder ordenarlos. La keyring vive en `<bóveda>/omega/keys/keyring.json`; la clave desbloqueada solo reside en RAM. La misma contraseña/código abre la bóveda en otro equipo. Cambiar la contraseña reenvuelve la DEK; rotar la clave vuelve a cifrar todo.
+- **Bóveda elegida por el usuario:** datos en `<bóveda>/omega/`; copias diarias en `<bóveda>/longlife/<dispositivo>/<fecha>/`, con 7 días de retención por dispositivo. La copia del día se actualiza minutos después de cada cambio y al cerrar o pasar a segundo plano.
+- **Respaldos pre-cifrado:** al activar o rotar el cifrado se escriben copias en texto plano en `omega/backups/pre-encryption-*`. Quedan fuera de *longlife* y se pueden revisar/borrar desde Ajustes > Cifrado.
+- **Borrado y restauración:** antes de vaciar los eventos se refresca la snapshot del día; el refresco automático se niega a reemplazar una snapshot no vacía por un `omega` vacío. Restaurar valida todos los hashes, crea una copia `pre-restore-*`, limpia el journal local y reemplaza `omega` con bloqueo de escritura. La app recarga bloqueada para desbloquear la keyring restaurada.
+- **Identidad de dispositivo:** `device_id` pertenece a la instalación local (fuera de la bóveda); un *heartbeat* en `omega/writer.json` avisa si otro equipo abrió la bóveda recientemente. La regla de escritor único es manual.
+- **Exportar/importar:** respaldo JSON de todos los eventos (en la app nativa los `payload` se exportan tal cual están cifrados; en el store de desarrollo del navegador se exportan descifrados) e importación inicial de CSV de productos, clientes y pedidos con mapeo de columnas.
+- **Sincronización externa opcional:** la bóveda se puede compartir con un agente de sincronización o nube. La app tolera copias de conflicto, pero no resuelve conflictos semánticos entre ediciones.
 
-- `docs/LIMITACIONES_CHECKLIST.md`: staged checklist for the remaining known issues, offline verification commands and the pending physical Android test with an external sync agent.
-- The UI is Spanish-only for now; the English selector was removed until translations exist.
-- Multi-currency is display-only with a manual ARS-per-unit rate; all stored amounts remain ARS cents.
-- The single-writer rule is still manual. The app warns when another installation touched the vault recently, but does not merge conflicts.
+### Semántica de datos
 
-### Development Requirements
-- Node 20+ and npm.
-- Rust (for Tauri).
-- Android Studio + NDK (for Android builds).
+- Identificadores **UUID v7** (ordenables por tiempo, sin autoincremento).
+- `created_at`, `updated_at`, `deleted_at` y `device_id` en cada entidad; los eventos conservan el dispositivo que los escribió.
+- Dinero siempre en **centavos de ARS** (enteros). La moneda de visualización (ARS/USD/EUR con cotización manual) solo cambia el formato.
+- Cambios como eventos inmutables; el estado se deriva.
+- Conflictos: movimientos siempre se fusionan; campos editables con *last-write-wins* por campo e HLC.
 
-### Documentation
-- See `docs/IMPLEMENTATION_MANUAL.md` for complete implementation details.
+## 🚀 Inicio rápido
 
-## License
+### Requisitos
 
-MIT
+- Node 20+ y npm
+- Rust (para Tauri)
+- Android Studio + NDK (solo para compilar Android)
+
+### Ejecutar
+
+```bash
+npm ci                 # instalar dependencias
+npm run dev            # frontend en http://127.0.0.1:1420
+npm run app:dev        # app nativa con Tauri
+npm test               # pruebas unitarias (Vitest)
+npm run typecheck      # verificación de tipos
+```
+
+La interfaz es **solo en español** por ahora (el selector de inglés se retiró hasta que existan traducciones).
+
+## 🗄️ Cómo viven tus datos
+
+```
+<bóveda>/
+├── omega/                     # estado canónico (eventos JSONL)
+│   ├── keys/keyring.json      # DEK envuelta
+│   └── writer.json            # heartbeat del dispositivo
+└── longlife/                  # snapshots diarios
+    └── <dispositivo>/<fecha>/
+```
+
+- **Desktop:** el usuario elige la carpeta bóveda.
+- **Android:** el usuario elige la carpeta mediante SAF.
+- No hay sincronización P2P/LAN integrada. Para compartir entre equipos, usa un agente externo sobre la carpeta y **no edites en dos equipos a la vez**.
+
+## 📦 Descargas y actualizaciones
+
+Los binarios se publican en [Releases](https://github.com/wulflo/StoreInventory/releases/latest):
+
+| Plataforma | Formatos |
+|---|---|
+| Linux | `.deb`, `.AppImage` |
+| Windows | `.msi`, `.nsis` |
+| Android | `.apk`, `.aab` |
+
+La búsqueda e instalación de actualizaciones están firmadas con **minisign**. En escritorio se usa el actualizador de Tauri; en Android se descarga el APK, se verifica la firma y se guarda en **Descargas** para instalarlo manualmente.
+
+## 🛠️ Desarrollo
+
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Servidor Vite en `127.0.0.1:1420` |
+| `npm run build` | Typecheck + build de producción |
+| `npm run app:dev` / `npm run app:build` | Desarrollo / build de Tauri |
+| `npm test` / `npm run test:watch` | Pruebas (una vez / en watch) |
+| `npm run release` | Flujo de versión |
+| `npm run version:map` | Verificar el mapa de versiones |
+
+Los workflows de CI y release se ejecutan en GitHub Actions; los artefactos, notas y `latest.json` se generan en el pipeline de release.
+
+## ⚠️ Limitaciones conocidas
+
+- La UI es solo en español; las traducciones están pendientes.
+- Multimoneda es **solo visual**, con cotización manual ARS por unidad; todo se almacena en centavos de ARS.
+- La regla de escritor único es manual: la app avisa si otro equipo tocó la bóveda, pero no fusiona conflictos.
+- Falta la prueba física en Android con un agente de sincronización externo.
+
+El detalle completo y verificable está en [`docs/LIMITACIONES_CHECKLIST.md`](docs/LIMITACIONES_CHECKLIST.md) y [`docs/CONTINUIDAD_CHECKLIST.md`](docs/CONTINUIDAD_CHECKLIST.md).
+
+## 📚 Documentación
+
+| Documento | Contenido |
+|---|---|
+| [Manual de implementación](docs/IMPLEMENTATION_MANUAL.md) | Detalles completos de implementación |
+| [Checklist de limitaciones](docs/LIMITACIONES_CHECKLIST.md) | Problemas conocidos y verificación offline |
+| [Checklist de continuidad](docs/CONTINUIDAD_CHECKLIST.md) | Estado de continuidad del proyecto |
+| [Progreso](docs/PROGRESO.md) | Historial de avances |
+| [Refactor de bóveda](docs/REFACTOR_VAULT_CHECKLIST.md) | Checklist del refactor de almacenamiento |
+| [Robustez de sincronización](docs/SYNC_ROBUSTNESS_CHECKLIST.md) | Checklist de sincronización |
+
+## 📄 Licencia
+
+[MIT](LICENSE)

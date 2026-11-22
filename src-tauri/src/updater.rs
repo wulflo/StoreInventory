@@ -9,9 +9,9 @@ use tauri::AppHandle;
 /* ------------------------------------------------------------------ */
 
 const UPDATE_ENDPOINT: &str =
-  "https://github.com/wulflo/store-inventory/releases/latest/download/latest.json";
+  "https://github.com/wulflo/StoreInventory/releases/latest/download/latest.json";
 #[cfg(not(target_os = "android"))]
-const RELEASES_URL: &str = "https://github.com/wulflo/store-inventory/releases/latest";
+const RELEASES_URL: &str = "https://github.com/wulflo/StoreInventory/releases/latest";
 const UPDATE_PUBKEY: &str = "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU3M0I4RDQ3N0IwODJEN0YKUldSL0xRaDdSNDA3NTZUZEhkMXJHL1JrV0l3czFIWkxHLzNPejJmaEpmY0Q1NWVmd2lxT1ZVd0YK";
 
 #[derive(Debug, Clone, Serialize)]
@@ -539,7 +539,7 @@ pub fn cmd_open_release_page(app: AppHandle) -> Result<(), String> {
   app
     .opener()
     .open_url(
-      "https://github.com/wulflo/store-inventory/releases/latest",
+      "https://github.com/wulflo/StoreInventory/releases/latest",
       None::<&str>,
     )
     .map_err(|e| format!("No se pudo abrir la página de descargas: {e}"))

@@ -28,7 +28,7 @@
 - [x] Tag y release `v0.2.5` enviados a GitHub.
 - [x] **2026-10-27 — v0.2.6:** versión y tag creados, pero el workflow de Release fue cancelado antes de publicar. No existe release `v0.2.6`; `releases/latest` no la toma.
 - [x] **2026-10-27 — v0.2.7:** release publicado con APK, AAB, AppImage, `.deb`, EXE y MSI firmados, más `latest.json` apuntando a `0.2.7`.
-  - URL: https://github.com/wulflo/store-inventory/releases/tag/v0.2.7
+  - URL: https://github.com/wulflo/StoreInventory/releases/tag/v0.2.7
   - Workflow Release: `40597849000` — verificación, Linux, Windows, Android y publicación en verde.
   - Commit del release: `dff087a` (`chore(release): v0.2.7`).
 
@@ -218,7 +218,7 @@ gh run list --limit 5
 - Versión subida a `0.2.7` en `package.json`, `Cargo.toml`, `Cargo.lock`, `tauri.conf.json`, `version.ts` y `tauri.properties` (`versionCode 2007`).
 - Tag `v0.2.7` creado sobre `dff087a` y enviado junto con `main`.
 - Workflow Release `40597849000` terminó en verde: verificación, build Linux, build Windows, build Android y publicación.
-- Release publicado: https://github.com/wulflo/store-inventory/releases/tag/v0.2.7
+- Release publicado: https://github.com/wulflo/StoreInventory/releases/tag/v0.2.7
 - Assets publicados:
   - `app-universal-release.apk` + `.sig`
   - `app-universal-release.aab`

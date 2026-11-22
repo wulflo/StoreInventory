@@ -321,8 +321,8 @@ npx tauri android build --debug --apk --target aarch64
 - En hardware real hay que instalar el APK de release; si hay una build debug
   instalada con otra firma, primero hay que desinstalarla (perderá los datos
   locales de la app, no los de la bóveda).
-- Release publicado el `2026-10-28`: [v0.2.12](https://github.com/wulflo/store-inventory/releases/tag/v0.2.12).
-- Workflow de publicación exitoso: [run 40735500745](https://github.com/wulflo/store-inventory/actions/runs/40735500745).
+- Release publicado el `2026-10-28`: [v0.2.12](https://github.com/wulflo/StoreInventory/releases/tag/v0.2.12).
+- Workflow de publicación exitoso: [run 40735500745](https://github.com/wulflo/StoreInventory/actions/runs/40735500745).
 - Assets publicados: APK universal, AAB, AppImage, `.deb`, MSI, NSIS y
   `latest.json` (con firma para `android-universal`, `linux-x86_64` y
   `windows-x86_64`).

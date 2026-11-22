@@ -47,7 +47,7 @@ describe('latest-json', () => {
     const json = buildLatestJson({
       version: '1.2.3',
       tag: 'v1.2.3',
-      repo: 'wulflo/store-inventory',
+      repo: 'wulflo/StoreInventory',
       artifactsDir: dir,
       notes: 'Notas',
       pubDate: '2026-10-27T00:00:00.000Z',
@@ -58,11 +58,11 @@ describe('latest-json', () => {
     expect(json.pub_date).toBe('2026-10-27T00:00:00.000Z');
     expect(json.platforms['linux-x86_64']).toEqual({
       signature: 'firma-linux',
-      url: 'https://github.com/wulflo/store-inventory/releases/download/v1.2.3/app_1.2.3_amd64.AppImage.tar.gz',
+      url: 'https://github.com/wulflo/StoreInventory/releases/download/v1.2.3/app_1.2.3_amd64.AppImage.tar.gz',
     });
     expect(json.platforms['windows-x86_64']).toEqual({
       signature: 'firma-windows',
-      url: 'https://github.com/wulflo/store-inventory/releases/download/v1.2.3/app_1.2.3_x64-setup.nsis.zip',
+      url: 'https://github.com/wulflo/StoreInventory/releases/download/v1.2.3/app_1.2.3_x64-setup.nsis.zip',
     });
   });
 
